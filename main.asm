@@ -1,10 +1,12 @@
+; [8/8/19]
+; MDS Spring 2017
 Parse    ; @@@nn[.n]nnk
-    MovF    RCData, w    ; Clears RCIF
-    AddwF    Parse_sum, F
+    MovF    RCData, w       ; Clears RCIF
+    AddwF   Parse_sum, F
     IncF    Parse_State, F
     MovF    Parse_State, w
-    Andlw    0x0F
-    AddwF    PC, F
+    Andlw   0x0F
+    AddwF   PC, F
     Goto    :reset     ; Invalid State
     Goto    :at        ; @@@
     Goto    :at
@@ -13,11 +15,11 @@ Parse    ; @@@nn[.n]nnk
     Goto    :char
     Goto    :char
     Goto    :char_et
-    Goto    :char    ; char_mph
+    Goto    :char      ; char_mph
     Goto    :char
     Goto    :char
     Goto    :check_sum
-    Goto    :reset    ; Invalid State
+    Goto    :reset     ; Invalid State
     Goto    :reset
     Goto    :reset
     Goto    :reset
@@ -25,32 +27,32 @@ Parse    ; @@@nn[.n]nnk
 :reset
     ClrF    Parse_State
     ClrF    Parse_Sum    ; '@@@'=-192
-    BCF    Control, Parse_ET
-    Movlw    Prse_Buffer
-    MovwF    Parse_FSR
+    BCF     Control, Parse_ET
+    Movlw   Prse_Buffer
+    MovwF   Parse_FSR
     Return
 
 :at
     MovF    RCData, w
-    Xorlw    '@'
-    BTFSS    Status, z
+    Xorlw   '@'
+    BTFSS   Status, z
     Goto    :reset
     Return
 
 :addr
-    movF    RCData, w
-    XorwF    Portx, w
-    Andlw    0x0F
-    BTFSS    Status, z
+    MovF    RCData, w
+    XorwF   Portx, w    ; Cmp to DIP-SW setting
+    Andlw   0x0F
+    BTFSS   Status, z
     Goto    :reset
     Return
 
 :char_et
     MovF    RCData,w
-    Xorlw    '.'
-    BTFSS    Status, z
+    Xorlw   '.'
+    BTFSS   Status, z
     Goto    :char
-    BSF    Control, Parse_ET
+    BSF     Control, Parse_ET
     Return
 
 :char
@@ -59,10 +61,10 @@ Parse    ; @@@nn[.n]nnk
 
 :char_period_drop
     MovF    RCData, w
-    Xorlw    '.'
-    BTFSS    Status, z
+    Xorlw   '.'
+    BTFSS   Status, z
     Goto    :char_inc
-    Return    ; discard
+    Return  ; discard
 
 :char_inc
     MovF    Parse_FSR, w
@@ -72,38 +74,38 @@ Parse    ; @@@nn[.n]nnk
 :char_sp
     MovF    RCData, w
     Xorlw   ' '
-    BTFSS    Status, z
+    BTFSS   Status, z
     Goto    :char_minus
-    Movlw    00000000b
-    MovwF    IDF
+    Movlw   00000000b
+    MovwF   IDF
     Return
 
 :char_minus
     MovF    RCData, w
-    Xorlw    '-'
-    BTFSS    Status, z
+    Xorlw   '-'
+    BTFSS   Status, z
     Goto    :char_L
-    Movlw    01000000b
-    MovwF    IDF
+    Movlw   01000000b
+    MovwF   IDF
     Return
 
 :char_L
     MovF    RCData, w
-    Xorlw    'L'
-    BTFSS    Status, z
+    Xorlw   'L'
+    BTFSS   Status, z
     Goto    :char_hex
-    Movlw    00111000b
-    MovwF    IDF
+    Movlw   00111000b
+    MovwF   IDF
     Return
 
 :char_hex
     MovF    RCData, w
-    Addlw    -58    ; -10/7..-1/12
-    BTFSS    Status, c    ; >0x39
-    Addlw    7        ; 0x30..0x39 -> 0..9, 0x41-0x46 -> A..F
-    Addlw    3        ; 0..15
+    Addlw   -58         ; -10/7..-1/12
+    BTFSS   Status, c   ; >0x39
+    Addlw   7           ; 0x30..0x39 -> 0..9, 0x41-0x46 -> A..F
+    Addlw   3           ; 0..15
     Call    :segment_table
-    MovwF    IDF
+    MovwF   IDF
     Return
 
 :segment_table
@@ -129,11 +131,11 @@ Parse    ; @@@nn[.n]nnk
 :check_sum
     MovF    Parse_Sum, F
     MovF    RCData, w
-    SubwF    Parse_Sum, F
-    SubwF    Parse_sum, F
-    BTFSS    Status, z
+    SubwF   Parse_Sum, F
+    SubwF   Parse_sum, F
+    BTFSS   Status, z
     Goto    :reset
-    BTFSC    Control, Parse_ET
+    BTFSC   Control, Parse_ET
     Goto    :copy_et
     Goto    :copy_mph
     
